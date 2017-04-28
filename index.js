@@ -29,7 +29,7 @@ module.exports = (opts) => {
      * @param {String[]} emailData.to
      * @param {Object} emailData.data
      */
-    addEmailTask(template, emailData) {
+    addEmailTask(template, emailData, cb) {
       return queue.create(template.toUpperCase(), {
         subject: emailData.subject,
         to: emailData.to,
@@ -38,7 +38,13 @@ module.exports = (opts) => {
         type: 'exponential',
         delay: 5000,
       })
-      .save();
+        .save((err) => {
+          if (err) {
+            cb(err);
+          } else {
+            cb(null);
+          }
+        });
     },
   };
 };
