@@ -46,5 +46,24 @@ module.exports = (opts) => {
           }
         });
     },
+
+    /**
+     * Add an Email to the Task Queue
+     *
+     * @param {Object} logData
+     * @param {Function} cb
+     */
+    addLogTask(logData, cb) {
+      return queue.create('LOG', logData).attempts(10).backoff({
+        type: 'exponential',
+        delay: 5000,
+      }).save((err) => {
+        if (err) {
+          cb(err);
+        } else {
+          cb(null);
+        }
+      });
+    },
   };
 };
