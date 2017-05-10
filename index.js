@@ -30,6 +30,7 @@ module.exports = (opts) => {
      * @param {Object} emailData.data
      */
     addEmailTask(template, emailData, cb) {
+      const callback = cb || (() => {});
       return queue.create(template.toUpperCase(), {
         subject: emailData.subject,
         to: emailData.to,
@@ -40,9 +41,9 @@ module.exports = (opts) => {
       })
         .save((err) => {
           if (err) {
-            cb(err);
+            callback(err);
           } else {
-            cb(null);
+            callback(null);
           }
         });
     },
@@ -54,14 +55,15 @@ module.exports = (opts) => {
      * @param {Function} cb
      */
     addLogTask(logData, cb) {
+      const callback = cb || (() => {});
       return queue.create('LOG', logData).attempts(10).backoff({
         type: 'exponential',
         delay: 5000,
       }).save((err) => {
         if (err) {
-          cb(err);
+          callback(err);
         } else {
-          cb(null);
+          callback(null);
         }
       });
     },
