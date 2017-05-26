@@ -1,5 +1,20 @@
 const kue = require('kue');
 
+function doConnect(queueOptions) {
+  const ret = kue.createQueue({
+    prefix: queueOptions.prefix,
+    redis: {
+      port: queueOptions.port,
+      host: queueOptions.host,
+      auth: queueOptions.auth || null,
+    },
+  });
+
+  ret.watchStuckJobs();
+
+  return ret;
+}
+
 module.exports = (opts) => {
   const defaultOptions = {
     port: 6379,
@@ -9,17 +24,14 @@ module.exports = (opts) => {
 
   const options = Object.assign({}, defaultOptions, opts || {});
 
-  const queue = kue.createQueue({
-    prefix: options.prefix,
-    redis: {
-      port: options.port,
-      host: options.host,
-      auth: options.auth || null,
-    },
+  const queue = doConnect(options);
+
+  queue.on('error', () => {
+    // here to prevent crash.
   });
 
   return {
-    queue: process.env.NODE_ENV === 'testing' ? queue : null,
+    baseQueue: queue,
 
     /**
      * Add an Email to the Task Queue
